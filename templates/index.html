@@ -1,0 +1,124 @@
+<!DOCTYPE html>  
+<html>  
+<head>  
+    <title>Fake News Detector</title>  
+    <style>  
+        body {  
+            font-family: Arial, sans-serif;  
+            max-width: 800px;  
+            margin: 0 auto;  
+            padding: 20px;  
+        }  
+        .container {  
+            border: 1px solid #ddd;  
+            padding: 20px;  
+            border-radius: 5px;  
+        }  
+        textarea {  
+            width: 100%;  
+            padding: 10px;  
+            margin-bottom: 10px;  
+            border-radius: 5px;  
+            border: 1px solid #ddd;  
+        }  
+        button {  
+            background-color: #4CAF50;  
+            color: white;  
+            padding: 10px 15px;  
+            border: none;  
+            border-radius: 5px;  
+            cursor: pointer;  
+        }  
+        .result {  
+            margin-top: 20px;  
+            padding: 15px;  
+            border-radius: 5px;  
+            display: none;  
+        }  
+        .fake {  
+            background-color: #ffcccc;  
+            border: 1px solid #ff8888;  
+        }  
+        .real {  
+            background-color: #ccffcc;  
+            border: 1px solid #88ff88;  
+        }  
+        .meter {  
+            height: 20px;  
+            position: relative;  
+            background: #f3f3f3;  
+            border-radius: 25px;  
+            padding: 5px;  
+            box-shadow: inset 0 -1px 1px rgba(255, 255, 255, 0.3);  
+            margin-top: 10px;  
+        }  
+        .meter > span {  
+            display: block;  
+            height: 100%;  
+            border-radius: 20px;  
+            background-color: rgb(43, 194, 83);  
+            position: relative;  
+            overflow: hidden;  
+        }  
+    </style>  
+</head>  
+<body>  
+    <h1>Fake News Detector</h1>  
+    <div class="container">  
+        <h2>Check if a news article is fake or real</h2>  
+        <textarea id="newsText" rows="10" placeholder="Paste news article text here..."></textarea>  
+        <button onclick="checkNews()">Analyze</button>  
+          
+        <div id="resultContainer" class="result">  
+            <h3>Result: <span id="prediction"></span></h3>  
+            <p>Confidence: <span id="confidence"></span></p>  
+            <div class="meter">  
+                <span id="confidenceMeter" style="width: 0%"></span>  
+            </div>  
+            <p>Probability of being fake: <span id="fakeProbability"></span></p>  
+            <p>Probability of being real: <span id="realProbability"></span></p>  
+        </div>  
+    </div>  
+  
+    <script>  
+        function checkNews() {  
+            const text = document.getElementById('newsText').value;  
+            if (!text) {  
+                alert('Please enter some text to analyze');  
+                return;  
+            }  
+              
+            // Call the API  
+            fetch('/predict', {  
+                method: 'POST',  
+                headers: {  
+                    'Content-Type': 'application/json',  
+                },  
+                body: JSON.stringify({ text: text }),  
+            })  
+            .then(response => response.json())  
+            .then(data => {  
+                const resultContainer = document.getElementById('resultContainer');  
+                resultContainer.style.display = 'block';  
+                  
+                if (data.prediction === 'FAKE') {  
+                    resultContainer.className = 'result fake';  
+                    document.getElementById('prediction').textContent = 'FAKE NEWS';  
+                } else {  
+                    resultContainer.className = 'result real';  
+                    document.getElementById('prediction').textContent = 'REAL NEWS';  
+                }  
+                  
+                document.getElementById('confidence').textContent = (data.confidence * 100).toFixed(2) + '%';  
+                document.getElementById('confidenceMeter').style.width = (data.confidence * 100) + '%';  
+                document.getElementById('fakeProbability').textContent = (data.fake_probability * 100).toFixed(2) + '%';  
+                document.getElementById('realProbability').textContent = (data.real_probability * 100).toFixed(2) + '%';  
+            })  
+            .catch(error => {  
+                console.error('Error:', error);  
+                alert('An error occurred while analyzing the text');  
+            });  
+        }  
+    </script>  
+</body>  
+</html>  
